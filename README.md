@@ -3,5 +3,14 @@
 > ### Author : `Salar Muhammadi` 
 
 ```BASH
-git clone https://github.com/blanckth/blanckarch.git && cd blanckarch && chmod +x ./blanckarch.sh && ./blanckarch.sh
+git clone https://github.com/blanckth/blanckarch.git && cd blanckarch && chmod 777 ./blanckarch.sh
+```
+#### Config and Save
+
+```BASH
+nano ./blanckarch.sh
+```
+#### Execute
+```BASH
+./blanckarch.sh
 ```

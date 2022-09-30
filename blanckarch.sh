@@ -21,7 +21,7 @@ declare -r userPass='password'; # User Password @Required
 # Auto Check for UEFI or BIOS bootloader
 
 declare -i bootMode;
-if ls /sys/firmware/efi/efivars > /dev/null 2>&1; then bootMode=0; else bootMode=1; fi; # BIOS By Default # UEFI if Found 
+if ls /sys/firmware/efi/efivars > /dev/null 2>&1; then bootMode=1; else bootMode=0; fi; # BIOS By Default # UEFI if Found
 
 #################################################
 # Choose Disk Address
@@ -48,59 +48,68 @@ timedatectl status;
 #################################################
 
 # Upgrade Keyring
-pacman -Sy archlinux-keyring ;
+pacman -Sy archlinux-keyring --noconfirm;
 
 #################################################
 
 # Partition Disk
 # BIOS
 [[ $bootMode == 0 ]] && ( (
-echo o # Create a new empty DOS partition table
-echo n # Add a new partition
-echo p # Primary partition
-echo 1 # Partition number
-echo   # First sector (Accept default: 1)
-echo "$swapSize" # Last sector (Accept default: varies)
-echo t # Set Swap Type
-echo swap # Set Swap
-echo n # New Partition
-echo p # Primary
-echo 2 # second Partition
-echo   # def First Sector
-echo "$rootSize" # def Last End Sector
-echo t # Set Linux Type
-echo 2 # Second Partition
-echo linux # Set Linux
-echo p # Print Tables
-echo w # Write changes
-) | fdisk "$diskMapAddr" );
-# UEFI
+    echo o # Create a new empty DOS partition table
+    echo n # New Partition
+    echo p # Primary partition
+    echo 1 # Partition number
+    echo   # Default First Sector
+    echo "$swapSize" # Swap Partiton Size
+    echo   #
+    echo t # Change Partition Type
+    echo swap #Swap Type
+    echo   #
+    echo n # New Partition
+    echo p # Primary Partition
+    echo 2 # Second Partition
+    echo   # Default First Sector
+    echo "$rootSize" # Root Partitio Size
+    echo   #
+    echo t # Change Partition Type
+    echo 2 # Second Partition
+    echo linux # Linux Root Type
+    echo   #
+    echo p # Print Partition Table
+    echo w # Write Partition Table
+    ) | fdisk "$diskMapAddr" );
+# UEFI @
 [[ $bootMode == 1 ]] && ( (
-    echo o #
-    echo n #
-    echo p #
-    echo 1 #
     echo   #
-    echo "$swapSize" #
-    echo t #
-    echo swap #
-    echo n # 
-    echo p #
-    echo 2 #
+    echo g # Create a new empty GPT partition table
+    echo n # New Partition
+    echo 1 # Default Partition Number ( 1 )
+    echo   # Default First Sector
+    echo "$swapSize" # Swap Partition Size
     echo   #
+    echo t # Change Partition Type
+    echo swap # Swap Type
+    echo   #
+    echo n # New Partition
+    echo 2 # Default Partition Number ( 2 )
+    echo   # Default First Sector
     echo "$bootSize" #
-    echo t #
-    echo uefi #
-    echo n #
-    echo p #
-    echo 3 #
     echo   #
-    echo "$rootSize" #
-    echo t #
-    echo 3 #
-    echo linux #
-    echo p #
-    echo w #
+    echo t # Change Partition Type
+    echo 2 # Default Partition Number ( 2 )
+    echo uefi # UEFI Type
+    echo   #
+    echo n # New Partition
+    echo 3 # Default Partition Number ( 3 )
+    echo   # Default First Sector
+    echo "$rootSize" # ROOT Partition Size
+    echo   #
+    echo t # Change Partition Type
+    echo 3 # Default Partition Number ( 3 )
+    echo linux # Linux Root Type
+    echo   #
+    echo p # Print Partition Table
+    echo w # Write Partition Table
 ) | fdisk "$diskMapAddr" );
 
 #################################################
@@ -115,14 +124,14 @@ mkswap ${diskMapAddr}1
 #################################################
 
 # Mount Drives
+swapon ${diskMapAddr}1;
 [[ $bootMode == 0 ]] && mount ${diskMapAddr}2 /mnt;
 [[ $bootMode == 1 ]] && mount ${diskMapAddr}3 /mnt;
-swapon ${diskMapAddr}1;
 
 #################################################
 
 # Install Base Root
-pacstrap /mnt base linux linux-firmware nano archlinux-keyring;
+pacstrap /mnt base linux linux-firmware nano;
 
 #################################################
 
@@ -206,7 +215,12 @@ genfstab -U /mnt >> /mnt/etc/fstab;
     echo '# Uncomment wheel as Sudoer';
     echo "sed -e '/%wheel ALL=(ALL:ALL) ALL/s/^#*//' -i /etc/sudoers;";
     echo '# ADD New USER';
-    echo "useradd -m -G wheel -s /bin/bash '$userName' -p '$userPass'"
+    echo "useradd -m -G wheel -s /bin/bash '$userName'"
+    echo '# Set User password';
+    echo '( ';
+    echo "    echo '$userPass' ";
+    echo "    echo '$userPass' ";
+    echo ') | passwd blanck';
     echo '#################################################';
     echo '# EXIT';
     echo 'exit';
@@ -222,7 +236,7 @@ mv ArchConf.sh /mnt;
 #################################################
 
 # Change to new root And Run Baked Script
-arch-chroot /mnt ./ArchConf.sh
+arch-chroot /mnt ./ArchConf.sh;
 
 #################################################
 

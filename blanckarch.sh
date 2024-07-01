@@ -192,7 +192,7 @@ genfstab -U /mnt >> /mnt/etc/fstab;
     echo 'pacman -S dnsmasq mtools bind-tools texinfo iproute2 dhcpcd dhclient man-db man-pages --noconfirm --needed; # Required';
     echo '# pacman -S dialog bc python nmap net-tools ntfs-3g screen --noconfirm --needed; # Optional';
     echo '# pacman -S tcpdump testdisk tmux --noconfirm --needed; # Optional';
-    echo '# pacman -S vlc uget remmina putty gufw ufw libreoffice wireshark-qt vscode firefox arduino audacious rkhunter xf86-input-synaptics --needed; # Optional';
+    echo '# pacman -S vlc uget remmina putty gufw ufw libreoffice wireshark-qt vscode firefox arduino audacious rkhunter xf86-input-synaptics --noconfirm --needed; # Optional';
     echo '#################################################';
     [[ $bootMode == 0 ]] && echo '# Configue Grub Bootloader BIOS mode';
     [[ $bootMode == 0 ]] && echo "grub-install ${diskMapAddr};";
